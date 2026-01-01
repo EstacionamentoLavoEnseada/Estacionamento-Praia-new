@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estacionamento Praia - Sistema de Controle</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .emoji {
+            font-size: 3rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-box.disponivel {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .stat-box.ocupadas {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+
+        .stat-box h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-box p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .dashboard h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .dashboard-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-item .label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .dashboard-item .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .dashboard-item.highlight {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border: 2px solid #667eea;
+        }
+
+        .historico-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .historico-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .historico-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .historico-item .placa {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .historico-item .valor-pago {
+            color: #11998e;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+        }
+
+        .form-group input[type="password"] {
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+            touch-action: manipulation;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .veiculos-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .veiculo-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .veiculo-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .veiculo-placa {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .veiculo-detalhes {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .veiculo-tempo {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        .btn-small {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            width: auto;
+            margin-top: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .valor-total {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #11998e;
+            margin: 20px 0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .config-section {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .config-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state .emoji {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .placa-preview {
+            background: #333;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-top: 10px;
+            letter-spacing: 2px;
+            font-family: monospace;
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #11998e;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .reload-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: transform 0.3s;
+        }
+
+        .reload-btn:active {
+            transform: rotate(180deg);
+        }
+
+        .comprovante {
+            background: white;
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .comprovante-header {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .comprovante-header h3 {
+            color: #667eea;
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .comprovante-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .comprovante-info {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .comprovante-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .comprovante-info-item .label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .comprovante-info-item .value {
+            color: #333;
+            font-weight: 700;
+        }
+
+        .comprovante-placa {
+            background: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+
+        .qrcode-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .comprovante-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #667eea;
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .comprovante-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .senha-info {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .senha-info h4 {
+            color: #856404;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .senha-info p {
+            color: #856404;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .senha-info code {
+            background: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            color: #d63031;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .comprovante-actions, .btn {
+                display: none !important;
+            }
+            .modal {
+                position: relative;
+                display: block !important;
+                background: white;
+            }
+            .modal-content {
+                box-shadow: none;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="emoji">🏖️ 🚗</div>
+            <h1>Estacionamento Praia</h1>
+            <p>Sistema de Controle Inteligente</p>
+        </div>
+
+        <!-- Stats Principais -->
+        <div class="stats">
+            <div class="stat-box disponivel">
+                <h3 id="vagasDisponiveis">50</h3>
+                <p>Vagas Disponíveis</p>
+            </div>
+            <div class="stat-box ocupadas">
+                <h3 id="vagasOcupadas">0</h3>
+                <p>Vagas Ocupadas</p>
+            </div>
+        </div>
+
+        <!-- Dashboard de Faturamento -->
+        <div class="dashboard">
+            <h2>
+                <span class="live-indicator"></span>
+                Painel em Tempo Real
+                <button class="reload-btn" onclick="atualizarDashboard()" title="Atualizar">🔄</button>
+            </h2>
+            <div class="dashboard-stats">
+                <div class="dashboard-item highlight">
+                    <div>
+                        <div class="label">💰 Faturamento HOJE</div>
+                    </div>
+                    <div class="value" id="faturamentoDia">R$ 0,00</div>
+                </div>
+                <div class="dashboard-item">
+                    <div>
+                        <div class="label">🚗 Carros Estacionados AGORA</div>
+                    </div>
+                    <div class="value" id="carrosAgora">0</div>
+                </div>
+                <div class="dashboard-item">
+                    <div>
+                        <div class="label">📊 Total de Atendimentos HOJE</div>
+                    </div>
+                    <div class="value" id="atendimentosDia">0</div>
+                </div>
+                <div class="dashboard-item">
+                    <div>
+                        <div class="label">⏱️ Tempo Médio de Permanência</div>
+                    </div>
+                    <div class="value" id="tempoMedio">0h</div>
+                </div>
+                <div class="dashboard-item">
+                    <div>
+                        <div class="label">💵 Faturamento Previsto (Carros Atuais)</div>
+                    </div>
+                    <div class="value" id="faturamentoPrevisto">R$ 0,00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Histórico do Dia -->
+        <div class="historico-card" id="historicoCard" style="display: none;">
+            <h3>📋 Últimos Atendimentos do Dia</h3>
+            <div id="historicoLista"></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('entrada')">🚗 Entrada</button>
+                <button class="tab" onclick="switchTab('saida')">💰 Saída</button>
+                <button class="tab" onclick="switchTab('config')">⚙️ Config</button>
+            </div>
+
+            <!-- Entrada Tab -->
+            <div id="entradaTab" class="tab-content active">
+                <div id="alertEntrada"></div>
+                
+                <form id="formEntrada">
+                    <div class="form-group">
+                        <label>🚗 Placa do Veículo</label>
+                        <input 
+                            type="text" 
+                            id="placaEntrada" 
+                            placeholder="ABC1234 ou ABC-1234" 
+                            autocomplete="off"
+                            autocorrect="off"
+                            autocapitalize="characters"
+                            spellcheck="false"
+                        >
+                        <div id="placaPreview" class="placa-preview" style="display: none;"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>🚙 Tipo de Veículo</label>
+                        <select id="tipoVeiculo">
+                            <option value="carro">🚗 Carro</option>
+                            <option value="moto">🏍️ Moto</option>
+                            <option value="van">🚙 Van/SUV</option>
+                        </select>
+                    </div>
+                    
+                    <button type="button" class="btn btn-success" onclick="registrarEntrada()">
+                        ✅ Registrar Entrada
+                    </button>
+                </form>
+            </div>
+
+            <!-- Saída Tab -->
+            <div id="saidaTab" class="tab-content">
+                <div class="form-group">
+                    <label>🔍 Buscar Veículo</label>
+                    <input 
+                        type="text" 
+                        id="buscaPlaca" 
+                        placeholder="Digite a placa..." 
+                        oninput="filtrarVeiculos(this.value)"
+                        autocomplete="off"
+                    >
+                </div>
+                
+                <div id="listaVeiculos" class="veiculos-list">
+                    <div class="empty-state">
+                        <div class="emoji">🚫</div>
+                        <p>Nenhum veículo no estacionamento</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Config Tab -->
+            <div id="configTab" class="tab-content">
+                <div id="alertConfig"></div>
+
+                <!-- Info sobre senha -->
+                <div class="senha-info">
+                    <h4>🔒 Proteção de Dados</h4>
+                    <p>
+                        Para limpar os dados do sistema, você precisará digitar a senha de administrador.
+                        <br><br>
+                        <strong>Senha padrão:</strong> <code>1234</code>
+                        <br><br>
+                        💡 <strong>Dica:</strong> Você pode alterar essa senha na seção "Segurança" abaixo.
+                    </p>
+                </div>
+                
+                <div class="config-section">
+                    <h3>💰 Valores</h3>
+                    <div class="form-group">
+                        <label>Primeira Hora (R$)</label>
+                        <input type="number" id="valorPrimeiraHora" value="15" step="0.5" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Hora Adicional (R$)</label>
+                        <input type="number" id="valorHoraAdicional" value="10" step="0.5" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor Diária (R$)</label>
+                        <input type="number" id="valorDiaria" value="50" step="0.5" min="0">
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3>🅿️ Capacidade</h3>
+                    <div class="form-group">
+                        <label>Total de Vagas</label>
+                        <input type="number" id="totalVagas" value="50" min="1">
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3>🔒 Segurança</h3>
+                    <div class="form-group">
+                        <label>Senha para Limpar Dados</label>
+                        <input type="password" id="senhaAdmin" placeholder="Digite a nova senha (deixe vazio para manter atual)" maxlength="20">
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            💡 Senha atual protege a função "Limpar Todos os Dados"
+                        </small>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar Configurações</button>
+                <button class="btn btn-danger" onclick="solicitarSenhaParaLimpar()">🗑️ Limpar Todos os Dados</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Comprovante -->
+    <div id="modalComprovante" class="modal">
+        <div class="modal-content">
+            <div class="comprovante" id="comprovanteContent">
+                <div class="comprovante-header">
+                    <h3>🏖️ ESTACIONAMENTO PRAIA</h3>
+                    <p>Comprovante de Entrada</p>
+                </div>
+
+                <div class="comprovante-placa" id="comprovantePlaca"></div>
+
+                <div class="comprovante-info">
+                    <div class="comprovante-info-item">
+                        <span class="label">🚗 Tipo:</span>
+                        <span class="value" id="comprovanteTipo"></span>
+                    </div>
+                    <div class="comprovante-info-item">
+                        <span class="label">📅 Data:</span>
+                        <span class="value" id="comprovanteData"></span>
+                    </div>
+                    <div class="comprovante-info-item">
+                        <span class="label">🕐 Hora Entrada:</span>
+                        <span class="value" id="comprovanteHora"></span>
+                    </div>
+                </div>
+
+                <div class="qrcode-container">
+                    <div id="qrcode"></div>
+                </div>
+
+                <div class="comprovante-footer">
+                    <p><strong>📱 Tire uma foto deste QR Code</strong></p>
+                    <p>Apresente na saída para agilizar o atendimento</p>
+                    <p style="margin-top: 10px; font-size: 0.75rem;">
+                        Valores: 1ª hora R$ <span id="comprovanteValor1"></span> | 
+                        Adicional R$ <span id="comprovanteValor2"></span>/h | 
+                        Diária R$ <span id="comprovanteValor3"></span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="comprovante-actions">
+                <button class="btn btn-primary" onclick="imprimirComprovante()">🖨️ Imprimir</button>
+                <button class="btn btn-success" onclick="fecharComprovante()">✅ Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Pagamento -->
+    <div id="modalPagamento" class="modal" onclick="fecharModalSeExterno(event)">
+        <div class="modal-content">
+            <h2>💰 Pagamento</h2>
+            <div id="detalhesCobranca"></div>
+            <button class="btn btn-success" onclick="confirmarSaida()">✅ Confirmar Saída</button>
+            <button class="btn btn-primary" onclick="fecharModal()">❌ Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Senha -->
+    <div id="modalSenha" class="modal">
+        <div class="modal-content">
+            <h2>🔒 Senha de Administrador</h2>
+            <p style="color: #666; margin-bottom: 20px;">
+                Digite a senha para limpar todos os dados do sistema
+            </p>
+            
+            <div class="form-group">
+                <input 
+                    type="password" 
+                    id="senhaLimpar" 
+                    placeholder="Digite a senha" 
+                    style="text-align: center;"
+                    maxlength="20"
+                >
+            </div>
+
+            <div id="alertSenha"></div>
+
+            <button class="btn btn-danger" onclick="verificarSenhaELimpar()">✅ Confirmar</button>
+            <button class="btn btn-primary" onclick="fecharModalSenha()">❌ Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        // Dados do sistema
+        let veiculos = [];
+        let historicoDia = [];
+        let config = {
+            totalVagas: 50,
+            valorPrimeiraHora: 15,
+            valorHoraAdicional: 10,
+            valorDiaria: 50,
+            senhaAdmin: '1234' // Senha padrão
+        };
+
+        let veiculoSaida = null;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarDados();
+            carregarConfig();
+            atualizarStats();
+            renderizarVeiculos();
+            atualizarDashboard();
+            configurarPlacaInput();
+            
+            setInterval(atualizarDashboard, 30000);
+        });
+
+        function carregarDados() {
+            try {
+                const dadosSalvos = localStorage.getItem('veiculos');
+                if (dadosSalvos) {
+                    veiculos = JSON.parse(dadosSalvos);
+                }
+                
+                const historicoSalvo = localStorage.getItem('historicoDia');
+                if (historicoSalvo) {
+                    historicoDia = JSON.parse(historicoSalvo);
+                    limparHistoricoSeNecessario();
+                }
+                
+                const configSalva = localStorage.getItem('config');
+                if (configSalva) {
+                    config = JSON.parse(configSalva);
+                    // Garantir que sempre tenha uma senha
+                    if (!config.senhaAdmin) {
+                        config.senhaAdmin = '1234';
+                    }
+                }
+            } catch (e) {
+                console.error('Erro ao carregar dados:', e);
+            }
+        }
+
+        function limparHistoricoSeNecessario() {
+            const hoje = new Date().toDateString();
+            historicoDia = historicoDia.filter(h => {
+                const dataRegistro = new Date(h.saida).toDateString();
+                return dataRegistro === hoje;
+            });
+            salvarHistorico();
+        }
+
+        function configurarPlacaInput() {
+            const input = document.getElementById('placaEntrada');
+            const preview = document.getElementById('placaPreview');
+            
+            input.addEventListener('input', (e) => {
+                let valor = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                
+                if (valor.length > 7) {
+                    valor = valor.substring(0, 7);
+                }
+                
+                e.target.value = valor;
+                
+                if (valor.length > 0) {
+                    const placaFormatada = formatarPlaca(valor);
+                    preview.textContent = placaFormatada;
+                    preview.style.display = 'block';
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    registrarEntrada();
+                }
+            });
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+            
+            if (tab === 'saida') {
+                renderizarVeiculos();
+            }
+        }
+
+        function registrarEntrada() {
+            limparAlertas();
+            
+            const placaInput = document.getElementById('placaEntrada').value.toUpperCase().trim();
+            const tipo = document.getElementById('tipoVeiculo').value;
+            
+            if (!placaInput) {
+                mostrarAlerta('entradaTab', '⚠️ Por favor, digite a placa do veículo', 'error');
+                document.getElementById('placaEntrada').focus();
+                return;
+            }
+            
+            const placa = placaInput.replace(/[^A-Z0-9]/g, '');
+            
+            if (placa.length < 6) {
+                mostrarAlerta('entradaTab', '⚠️ Placa inválida! Use formato: ABC1234 ou ABC-1234', 'error');
+                return;
+            }
+            
+            if (veiculos.find(v => v.placa === placa)) {
+                mostrarAlerta('entradaTab', '⚠️ Este veículo já está no estacionamento!', 'error');
+                return;
+            }
+            
+            if (veiculos.length >= config.totalVagas) {
+                mostrarAlerta('entradaTab', '⚠️ Estacionamento lotado! Não há vagas disponíveis.', 'error');
+                return;
+            }
+            
+            const veiculo = {
+                placa: placa,
+                tipo: tipo,
+                entrada: new Date().toISOString()
+            };
+            
+            veiculos.push(veiculo);
+            salvarDados();
+            
+            document.getElementById('placaEntrada').value = '';
+            document.getElementById('placaPreview').style.display = 'none';
+            document.getElementById('tipoVeiculo').selectedIndex = 0;
+            
+            atualizarStats();
+            atualizarDashboard();
+            
+            mostrarComprovante(veiculo);
+            
+            setTimeout(() => {
+                document.getElementById('placaEntrada').focus();
+            }, 100);
+        }
+
+        function mostrarComprovante(veiculo) {
+            const placaFormatada = formatarPlaca(veiculo.placa);
+            const data = new Date(veiculo.entrada);
+            
+            document.getElementById('comprovantePlaca').textContent = placaFormatada;
+            document.getElementById('comprovanteTipo').textContent = veiculo.tipo.toUpperCase();
+            document.getElementById('comprovanteData').textContent = data.toLocaleDateString('pt-BR');
+            document.getElementById('comprovanteHora').textContent = data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            document.getElementById('comprovanteValor1').textContent = config.valorPrimeiraHora.toFixed(2);
+            document.getElementById('comprovanteValor2').textContent = config.valorHoraAdicional.toFixed(2);
+            document.getElementById('comprovanteValor3').textContent = config.valorDiaria.toFixed(2);
+            
+            document.getElementById('qrcode').innerHTML = '';
+            
+            const dadosQR = JSON.stringify({
+                placa: veiculo.placa,
+                tipo: veiculo.tipo,
+                entrada: veiculo.entrada,
+                estacionamento: 'Estacionamento Praia'
+            });
+            
+            new QRCode(document.getElementById('qrcode'), {
+                text: dadosQR,
+                width: 200,
+                height: 200,
+                colorDark: '#333333',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            document.getElementById('modalComprovante').classList.add('active');
+        }
+
+        function fecharComprovante() {
+            document.getElementById('modalComprovante').classList.remove('active');
+        }
+
+        function imprimirComprovante() {
+            window.print();
+        }
+
+        function renderizarVeiculos() {
+            const lista = document.getElementById('listaVeiculos');
+            
+            if (veiculos.length === 0) {
+                lista.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">🚫</div>
+                        <p>Nenhum veículo no estacionamento</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const veiculosOrdenados = [...veiculos].sort((a, b) => 
+                new Date(b.entrada) - new Date(a.entrada)
+            );
+            
+            lista.innerHTML = veiculosOrdenados.map(v => {
+                const tempo = calcularTempo(v.entrada);
+                const valor = calcularValor(v.entrada);
+                
+                return `
+                    <div class="veiculo-item" data-placa="${v.placa}">
+                        <div class="veiculo-info">
+                            <div class="veiculo-placa">${formatarPlaca(v.placa)}</div>
+                            <div class="veiculo-detalhes">
+                                ${getTipoEmoji(v.tipo)} ${v.tipo.toUpperCase()} | 
+                                Entrada: ${formatarHora(v.entrada)}
+                            </div>
+                            <div class="veiculo-tempo">⏱️ ${tempo} | R$ ${valor.toFixed(2)}</div>
+                        </div>
+                        <button class="btn btn-danger btn-small" onclick="abrirModalSaida('${v.placa}')">
+                            Saída →
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filtrarVeiculos(busca) {
+            const items = document.querySelectorAll('.veiculo-item');
+            const buscaLimpa = busca.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            
+            items.forEach(item => {
+                const placa = item.dataset.placa;
+                if (placa.includes(buscaLimpa) || buscaLimpa === '') {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function abrirModalSaida(placa) {
+            veiculoSaida = veiculos.find(v => v.placa === placa);
+            if (!veiculoSaida) return;
+            
+            const tempo = calcularTempo(veiculoSaida.entrada);
+            const valor = calcularValor(veiculoSaida.entrada);
+            const horas = calcularHoras(veiculoSaida.entrada);
+            
+            document.getElementById('detalhesCobranca').innerHTML = `
+                <p style="font-size: 1.1rem; color: #666; margin-bottom: 10px;">
+                    <strong>Placa:</strong> ${formatarPlaca(veiculoSaida.placa)}
+                </p>
+                <p style="color: #666; margin-bottom: 10px;">
+                    <strong>Tipo:</strong> ${getTipoEmoji(veiculoSaida.tipo)} ${veiculoSaida.tipo.toUpperCase()}
+                </p>
+                <p style="color: #666; margin-bottom: 10px;">
+                    <strong>Entrada:</strong> ${formatarHora(veiculoSaida.entrada)}
+                </p>
+                <p style="color: #666; margin-bottom: 20px;">
+                    <strong>Permanência:</strong> ${tempo} (${horas.toFixed(1)}h)
+                </p>
+                <div class="valor-total">R$ ${valor.toFixed(2)}</div>
+            `;
+            
+            document.getElementById('modalPagamento').classList.add('active');
+        }
+
+        function confirmarSaida() {
+            if (!veiculoSaida) return;
+            
+            const valor = calcularValor(veiculoSaida.entrada);
+            
+            historicoDia.push({
+                placa: veiculoSaida.placa,
+                tipo: veiculoSaida.tipo,
+                entrada: veiculoSaida.entrada,
+                saida: new Date().toISOString(),
+                valor: valor
+            });
+            
+            veiculos = veiculos.filter(v => v.placa !== veiculoSaida.placa);
+            
+            salvarDados();
+            salvarHistorico();
+            
+            fecharModal();
+            renderizarVeiculos();
+            atualizarStats();
+            atualizarDashboard();
+            
+            veiculoSaida = null;
+        }
+
+        function fecharModal() {
+            document.getElementById('modalPagamento').classList.remove('active');
+            veiculoSaida = null;
+        }
+
+        function fecharModalSeExterno(event) {
+            if (event.target.id === 'modalPagamento') {
+                fecharModal();
+            }
+        }
+
+        function solicitarSenhaParaLimpar() {
+            document.getElementById('senhaLimpar').value = '';
+            document.getElementById('alertSenha').innerHTML = '';
+            document.getElementById('modalSenha').classList.add('active');
+            setTimeout(() => {
+                document.getElementById('senhaLimpar').focus();
+            }, 100);
+        }
+
+        function fecharModalSenha() {
+            document.getElementById('modalSenha').classList.remove('active');
+            document.getElementById('senhaLimpar').value = '';
+        }
+
+        function verificarSenhaELimpar() {
+            const senhaDigitada = document.getElementById('senhaLimpar').value;
+            
+            if (!senhaDigitada) {
+                document.getElementById('alertSenha').innerHTML = '<div class="alert alert-error">⚠️ Digite a senha!</div>';
+                return;
+            }
+            
+            if (senhaDigitada !== config.senhaAdmin) {
+                document.getElementById('alertSenha').innerHTML = '<div class="alert alert-error">❌ Senha incorreta! Tente novamente.</div>';
+                document.getElementById('senhaLimpar').value = '';
+                document.getElementById('senhaLimpar').focus();
+                return;
+            }
+            
+            // Senha correta - limpar dados
+            veiculos = [];
+            historicoDia = [];
+            salvarDados();
+            salvarHistorico();
+            renderizarVeiculos();
+            atualizarStats();
+            atualizarDashboard();
+            
+            fecharModalSenha();
+            mostrarAlerta('configTab', '✅ Dados limpos com sucesso!', 'success');
+        }
+
+        function atualizarDashboard() {
+            const faturamentoDia = historicoDia.reduce((sum, h) => sum + h.valor, 0);
+            document.getElementById('faturamentoDia').textContent = `R$ ${faturamentoDia.toFixed(2)}`;
+            
+            document.getElementById('carrosAgora').textContent = veiculos.length;
+            document.getElementById('atendimentosDia').textContent = historicoDia.length;
+            
+            if (historicoDia.length > 0) {
+                const tempoTotal = historicoDia.reduce((sum, h) => {
+                    return sum + (new Date(h.saida) - new Date(h.entrada));
+                }, 0);
+                const tempoMedioMs = tempoTotal / historicoDia.length;
+                const horasMedias = tempoMedioMs / 3600000;
+                document.getElementById('tempoMedio').textContent = `${horasMedias.toFixed(1)}h`;
+            } else {
+                document.getElementById('tempoMedio').textContent = '0h';
+            }
+            
+            const faturamentoPrevisto = veiculos.reduce((sum, v) => {
+                return sum + calcularValor(v.entrada);
+            }, 0);
+            document.getElementById('faturamentoPrevisto').textContent = `R$ ${faturamentoPrevisto.toFixed(2)}`;
+            
+            renderizarHistorico();
+        }
+
+        function renderizarHistorico() {
+            const historicoCard = document.getElementById('historicoCard');
+            const historicoLista = document.getElementById('historicoLista');
+            
+            if (historicoDia.length === 0) {
+                historicoCard.style.display = 'none';
+                return;
+            }
+            
+            historicoCard.style.display = 'block';
+            
+            const ultimosAtendimentos = [...historicoDia].reverse().slice(0, 5);
+            
+            historicoLista.innerHTML = ultimosAtendimentos.map(h => {
+                const tempo = calcularTempo(h.entrada, h.saida);
+                return `
+                    <div class="historico-item">
+                        <div>
+                            <span class="placa">${formatarPlaca(h.placa)}</span>
+                            <div style="font-size: 0.8rem; color: #999; margin-top: 3px;">
+                                ${tempo}
+                            </div>
+                        </div>
+                        <span class="valor-pago">R$ ${h.valor.toFixed(2)}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function calcularTempo(entrada, saida = null) {
+            const inicio = new Date(entrada);
+            const fim = saida ? new Date(saida) : new Date();
+            const diff = fim - inicio;
+            
+            const dias = Math.floor(diff / 86400000);
+            const horas = Math.floor((diff % 86400000) / 3600000);
+            const minutos = Math.floor((diff % 3600000) / 60000);
+            
+            if (dias > 0) {
+                return `${dias}d ${horas}h ${minutos}min`;
+            }
+            if (horas === 0) {
+                return `${minutos}min`;
+            }
+            return `${horas}h ${minutos}min`;
+        }
+
+        function calcularHoras(entrada) {
+            const inicio = new Date(entrada);
+            const agora = new Date();
+            const diff = agora - inicio;
+            return diff / 3600000;
+        }
+
+        function calcularValor(entrada) {
+            const horas = calcularHoras(entrada);
+            
+            if (horas >= 8) {
+                return config.valorDiaria;
+            }
+            
+            if (horas <= 1) {
+                return config.valorPrimeiraHora;
+            }
+            
+            const horasAdicionais = Math.ceil(horas - 1);
+            return config.valorPrimeiraHora + (horasAdicionais * config.valorHoraAdicional);
+        }
+
+        function formatarPlaca(placa) {
+            if (!placa) return '';
+            
+            const limpa = placa.replace(/[^A-Z0-9]/g, '');
+            
+            if (limpa.length >= 7) {
+                return `${limpa.slice(0, 3)}-${limpa.slice(3, 7)}`;
+            } else if (limpa.length > 3) {
+                return `${limpa.slice(0, 3)}-${limpa.slice(3)}`;
+            }
+            return limpa;
+        }
+
+        function formatarHora(dataStr) {
+            const data = new Date(dataStr);
+            return data.toLocaleString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit',
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        function getTipoEmoji(tipo) {
+            const emojis = {
+                'carro': '🚗',
+                'moto': '🏍️',
+                'van': '🚙'
+            };
+            return emojis[tipo] || '🚗';
+        }
+
+        function atualizarStats() {
+            const ocupadas = veiculos.length;
+            const disponiveis = config.totalVagas - ocupadas;
+            
+            document.getElementById('vagasOcupadas').textContent = ocupadas;
+            document.getElementById('vagasDisponiveis').textContent = disponiveis;
+        }
+
+        function carregarConfig() {
+            document.getElementById('totalVagas').value = config.totalVagas;
+            document.getElementById('valorPrimeiraHora').value = config.valorPrimeiraHora;
+            document.getElementById('valorHoraAdicional').value = config.valorHoraAdicional;
+            document.getElementById('valorDiaria').value = config.valorDiaria;
+            // Não mostrar a senha no campo por segurança
+        }
+
+        function salvarConfig() {
+            limparAlertas();
+            
+            config.totalVagas = parseInt(document.getElementById('totalVagas').value);
+            config.valorPrimeiraHora = parseFloat(document.getElementById('valorPrimeiraHora').value);
+            config.valorHoraAdicional = parseFloat(document.getElementById('valorHoraAdicional').value);
+            config.valorDiaria = parseFloat(document.getElementById('valorDiaria').value);
+            
+            // Alterar senha se foi digitada uma nova
+            const novaSenha = document.getElementById('senhaAdmin').value;
+            if (novaSenha && novaSenha.trim() !== '') {
+                config.senhaAdmin = novaSenha.trim();
+                document.getElementById('senhaAdmin').value = '';
+                mostrarAlerta('configTab', '✅ Configurações e senha salvos com sucesso!', 'success');
+            } else {
+                mostrarAlerta('configTab', '✅ Configurações salvas com sucesso!', 'success');
+            }
+            
+            localStorage.setItem('config', JSON.stringify(config));
+            atualizarStats();
+        }
+
+        function salvarDados() {
+            try {
+                localStorage.setItem('veiculos', JSON.stringify(veiculos));
+            } catch (e) {
+                console.error('Erro ao salvar dados:', e);
+            }
+        }
+
+        function salvarHistorico() {
+            try {
+                localStorage.setItem('historicoDia', JSON.stringify(historicoDia));
+            } catch (e) {
+                console.error('Erro ao salvar histórico:', e);
+            }
+        }
+
+        function mostrarAlerta(tabId, mensagem, tipo) {
+            const alertDiv = document.getElementById('alert' + tabId.replace('Tab', '').charAt(0).toUpperCase() + tabId.replace('Tab', '').slice(1));
+            
+            if (!alertDiv) {
+                alert(mensagem.replace(/<br>/g, '\n').replace(/<[^>]*>/g, ''));
+                return;
+            }
+            
+            const classes = {
+                'success': 'alert-success',
+                'error': 'alert-error',
+                'info': 'alert-info',
+                'warning': 'alert-warning'
+            };
+            
+            alertDiv.innerHTML = `<div class="alert ${classes[tipo] || 'alert-info'}">${mensagem}</div>`;
+            
+            setTimeout(() => {
+                alertDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function limparAlertas() {
+            document.querySelectorAll('[id^="alert"]').forEach(el => {
+                el.innerHTML = '';
+            });
+        }
+
+        setInterval(() => {
+            if (veiculos.length > 0) {
+                if (document.getElementById('saidaTab').classList.contains('active')) {
+                    renderizarVeiculos();
+                }
+                atualizarDashboard();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
